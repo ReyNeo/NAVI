@@ -195,6 +195,7 @@ class LainExplorer(QMainWindow):
             files = os.listdir(custom_dir)
             self.file_list.addItem(self.target_drive + "\\")
             if self.target_drive == 'C:': 
+                pass
                 #self.file_list.addItem('C:\\Users\\DNS\\Desktop') FIXME сделать проверку имерни пользователя и вставить сюда
 
             for f in files:
