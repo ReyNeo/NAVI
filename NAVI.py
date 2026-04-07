@@ -11,14 +11,14 @@ class LainExplorer(QMainWindow):
     def __init__(self):
         super().__init__()
         self.custom_dir = None
-        # --- Настройка Окна ---
+        # Настройка Окна
         self.setAttribute(Qt.WA_TranslucentBackground)
-        self.setWindowTitle("NAVI System v1.1")
+        self.setWindowTitle("NAVI System v0.3")
         self.resize(800, 600)
         # Убираем рамку
         self.setWindowFlags(Qt.FramelessWindowHint) 
         
-        # --- СТИЛЬ ---
+        # СТИЛЬ
         self.setStyleSheet("""
             QMainWindow {
                 background-color: transparent; 
@@ -115,14 +115,14 @@ class LainExplorer(QMainWindow):
             }
         """)
 
-        # --- ГЛАВНОЕ ОКНО ---
+        # ГЛАВНОЕ ОКНО
         main_widget = QWidget()
         self.setCentralWidget(main_widget)
         layout = QVBoxLayout(main_widget)
         layout.setContentsMargins(0, 0, 0, 0) # Убираем отступы по краям
         layout.setSpacing(0) # Убираем расстояние между элементами
 
-        # --- 1. РАМКА ОКНА СВЕРХУ (TITLE BAR) ---
+        # РАМКА ОКНА СВЕРХУ (TITLE BAR)
         self.title_bar = QWidget()
         self.title_bar.setObjectName("custom_title_bar") # Для стиля выше
         self.title_bar.setFixedHeight(30)
@@ -131,11 +131,11 @@ class LainExplorer(QMainWindow):
         title_layout.setContentsMargins(10, 0, 0, 0)
 
         # Текст слева
-        self.label_status = QLabel("NAVI [Nomad Audio Video Interface]")
+        self.label_status = QLabel("NAVI [Nomad Ambitious Vibecoded Interface]")
         
         self.target_drive = os.path.splitdrive(sys.executable)[0] #Узнаём диск на котором запущен
         # self.target_drive = "E:" # Для тестов
-        self.label_status.setText(f"NAVI [Nomad Audio Video Interface] executed in {self.target_drive}")
+        self.label_status.setText(f"{self.label_status.text()[:42]} {self.target_drive}")
         title_layout.addWidget(self.label_status)
         
         # "Пружина", чтобы сдвинуть кнопки вправо
@@ -158,7 +158,7 @@ class LainExplorer(QMainWindow):
         # Добавляем рамку в главный лайаут
         layout.addWidget(self.title_bar)
 
-        # --- 2. ОБЛАСТЬ С ФАЙЛАМИ ---
+        # ОБЛАСТЬ С ФАЙЛАМИ
         self.file_list = QListWidget()
         self.file_list.itemDoubleClicked.connect(self.open_file)
         layout.addWidget(self.file_list)
@@ -166,7 +166,7 @@ class LainExplorer(QMainWindow):
         self.start_watcher()
         self.load_files()
 
-    # --- НОВЫЕ МЕТОДЫ ДЛЯ ПЕРЕТАСКИВАНИЯ ОКНА ---
+    # МЕТОДЫ ДЛЯ ПЕРЕТАСКИВАНИЯ ОКНА
     def mousePressEvent(self, event):
         # Запоминаем позицию клика, если он был на нашей рамке
         if event.button() == Qt.LeftButton and event.y() <= 30:
@@ -180,14 +180,9 @@ class LainExplorer(QMainWindow):
             self.move(event.globalPos() - self.drag_pos)
             event.accept()
 
-    # ... остальные твои функции (load_files, start_watcher и т.д.) ...
-
     def load_files(self,custom_dir=None):
         """Показывает файлы, скрывая только саму программу"""
         self.file_list.clear()
-        # 1. Определяем имя текущего запущенного файла
-        # Если это скомпилированный exe: sys.executable (полный путь)
-        # Если это скрипт .py: sys.argv[0] (чтобы работало при отладке)
         if getattr(sys, 'frozen', False):
             # Программа собрана в exe
             current_filename = os.path.basename(sys.executable)
@@ -200,22 +195,19 @@ class LainExplorer(QMainWindow):
             files = os.listdir(custom_dir)
             self.file_list.addItem(self.target_drive + "\\")
             if self.target_drive == 'C:': 
-                self.file_list.addItem('C:\\Users\\DNS\\Desktop')
+                #self.file_list.addItem('C:\\Users\\DNS\\Desktop') FIXME сделать проверку имерни пользователя и вставить сюда
 
             for f in files:
-                # 2. Пропускаем только наш собственный файл
                 if f == current_filename:
                     continue
-                
                 # (Опционально) Можно также скрыть системные папки, типа $RECYCLE.BIN или System Volume Information
                 #if f.startswith('$') or f == 'System Volume Information':
                 #    continue
 
                 item = QListWidgetItem(f)
 
-                # Помечаем папки красным цветом
                 if os.path.isdir(os.path.join(custom_dir, f)):
-                    item.setForeground(Qt.red) # FIXME сделать более красивый цвет, настройку
+                    item.setForeground(Qt.red)
                 
                 self.file_list.addItem(item)
                 
@@ -223,7 +215,7 @@ class LainExplorer(QMainWindow):
             self.label_status.setText(f"Error reading data: {e}")
 
     def open_file(self, item):
-        """Открывает файл через систему (пока что)"""
+        """Открывает файл, папку"""
         file_name = item.text()
         if self.custom_dir == None: self.custom_dir = self.target_drive + "\\"
         full_path = os.path.join(self.custom_dir, file_name)
@@ -232,7 +224,7 @@ class LainExplorer(QMainWindow):
             os.startfile(full_path)
         elif os.path.isdir(full_path):
             self.custom_dir = full_path
-            self.label_status.setText(f"NAVI [Nomad Audio Video Interface] executed in {full_path}")
+            self.label_status.setText(f"{self.label_status.text()[:42]} {full_path}")
             self.load_files(full_path)
 
     # === 4. Страж (Убийца процесса) ===
@@ -241,7 +233,7 @@ class LainExplorer(QMainWindow):
             while True:
                 if not os.path.exists(self.target_drive):
                     print("DRIVE LOST. TERMINATING...")
-                    # Жесткое завершение
+
                     os._exit(0)
                 time.sleep(1)
         
